@@ -5,9 +5,14 @@ from api.v1.router import api_router
 app = FastAPI(title="MTaiNavi Studio Backend", version="1.0.0")
 
 # 프론트엔드(Next.js)와의 통신을 위한 CORS 설정
+origins = [
+    "http://localhost:3000",
+    "https://mt-ai-navi-web.onrender.com",  # 👈 배포된 프론트엔드 주소 추가
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
