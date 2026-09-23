@@ -11,7 +11,7 @@ export default function LoginPage() {
   const API_BASE_URL = 
     typeof window !== 'undefined' && window.location.hostname === 'localhost'
       ? 'http://localhost:8000'
-      : 'https://your-backend-url.onrender.com'; // 👈 본인의 실제 Render 백엔드 주소로 딱 한 번만 입력해두세요!
+      : 'https://mt-ai-navi-project.onrender.com'; // 👈 본인의 실제 Render 백엔드 주소로 딱 한 번만 입력해두세요!
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
