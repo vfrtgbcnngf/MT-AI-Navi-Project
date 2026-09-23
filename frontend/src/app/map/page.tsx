@@ -30,6 +30,11 @@ export default function MapPage() {
   const [searchTitle, setSearchTitle] = useState("");
   const [places, setPlaces] = useState<Place[]>([]);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
+
+  const API_BASE_URL = 
+    typeof window !== 'undefined' && window.location.hostname === 'localhost'
+      ? 'http://localhost:8000'
+      : 'https://your-backend-url.onrender.com'; // 👈 본인의 실제 Render 백엔드 주소로 딱 한 번만 입력해두세요!
   
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [routeCoords, setRouteCoords] = useState<[number, number][] | null>(null);
@@ -52,7 +57,7 @@ export default function MapPage() {
     try {
       setAiMessage("🔄 백엔드 서버에서 최적의 경로 및 교통 정보를 계산 중입니다...");
       
-      const response = await fetch('http://localhost:8000/api/v1/map/route', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/map/route`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -212,7 +217,7 @@ export default function MapPage() {
     setAiMessage("🤖 AI 백엔드가 20개 이상의 장소와 위치 좌표를 분석 중입니다...");
 
     try {
-      const response = await fetch('http://localhost:8000/api/v1/map/search', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/map/search`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query }),
