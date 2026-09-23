@@ -23,6 +23,11 @@ export default function MLDLMenuPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [data, setData] = useState<MLDLResponse | null>(null);
 
+  const API_BASE_URL = 
+    typeof window !== 'undefined' && window.location.hostname === 'localhost'
+      ? 'http://localhost:8000'
+      : 'https://your-backend-url.onrender.com'; // 👈 본인의 실제 Render 백엔드 주소로 딱 한 번만 입력해두세요!
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [visionLoading, setVisionLoading] = useState<boolean>(false);
   const [visionResult, setVisionResult] = useState<string | null>(null);
@@ -31,7 +36,7 @@ export default function MLDLMenuPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/v1/mldl', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/mldl`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ region }),
@@ -57,7 +62,7 @@ export default function MLDLMenuPage() {
     formData.append('region', region);
 
     try {
-      const response = await fetch('http://localhost:8000/api/v1/mldl/upload-analysis', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/mldl/upload-analysis`, {
         method: 'POST',
         body: formData,
       });
