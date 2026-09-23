@@ -1,17 +1,17 @@
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from pydantic import BaseModel
-from fastapi.middleware.cors import CORSMiddleware
-import google.generativeai as genai
-from PIL import Image, ImageOps, ImageFilter, ImageEnhance
+from google import genai
+from PIL import Image, ImageOps, ImageFilter
 import io
 import base64
-import random
-import os
 import hashlib
-
+import os
 
 # 상위 api_router와 연결되므로 여기서는 하위 경로인 '/critique'만 지정합니다.
 router = APIRouter(prefix="/critique", tags=["critique"])
+
+# 최신 google-genai 클라이언트 초기화 (환경 변수의 GEMINI_API_KEY 자동 사용)
+client = genai.Client()
 
 # 1. AI 작품 비평 (Gemini Vision 활용)
 @router.post("/analyze")
@@ -20,13 +20,16 @@ async def analyze_artwork(file: UploadFile = File(...)):
         image_bytes = await file.read()
         image = Image.open(io.BytesIO(image_bytes))
         
-        # 안전한 모델 호출 및 예외 방어
-        model = genai.GenerativeModel('models/gemini-flash-lite-latest')
         prompt = (
             "이 미술 작품/사진에 대해 전문적이고 통찰력 있으면서도 흥미로운 비평을 작성해주세요. "
             "1. 구도와 색감 분석, 2. 전달되는 감정과 분위기, 3. 총평 순서로 구성해 주세요."
         )
-        response = model.generate_content([prompt, image])
+        
+        # 최신 SDK 호출 방식 적용
+        response = client.models.generate_content(
+            model='models/gemini-flash-lite-latest',  # 또는 사용 가능한 모델명
+            contents=[prompt, image]
+        )
         
         return {
             "success": True,
@@ -102,7 +105,6 @@ def get_ai_fortune(req: FortuneRequest):
             "energy": 65 + ((hash_val // 23) % 32)        # 활력/건강운 (65~96점)
         }
         
-        model = genai.GenerativeModel('models/gemini-flash-lite-latest')
         prompt = (
             f"사용자 정보:\n"
             f"- 이름: {req.name}\n"
@@ -114,13 +116,17 @@ def get_ai_fortune(req: FortuneRequest):
             f"특히 재물과 행운을 끌어올릴 수 있는 실천적 조언을 포함해 주세요."
         )
         
-        response = model.generate_content(prompt)
+        # 최신 SDK 호출 방식 적용
+        response = client.models.generate_content(
+            model='models/gemini-flash-lite-latest',
+            contents=prompt
+        )
         
         return {
             "success": True,
             "target": req.target,
             "name": req.name,
-            "fortune_text": response.text, # 💡 프론트엔드와 맞출 키값
+            "fortune_text": response.text, 
             "scores": scores 
         }
     except Exception as e:
