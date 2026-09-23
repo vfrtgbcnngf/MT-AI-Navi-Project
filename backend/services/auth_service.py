@@ -27,7 +27,10 @@ user_collection = db.get_collection("users")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def get_password_hash(password: str):
-    return pwd_context.hash(password)
+    # bcrypt의 72바이트 제한 에러를 방지하기 위해 72바이트까지만 잘라냅니다.
+    password_bytes = password.encode('utf-8')
+    if len(password_bytes) > 72:
+        password = password_bytes[:72].decode('utf-8', errors='ignore')
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
