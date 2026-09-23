@@ -8,3 +8,4 @@ scikit-learn
 python-multipart
 holidays
 google-generativeai
+pandas
