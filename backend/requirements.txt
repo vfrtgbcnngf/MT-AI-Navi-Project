@@ -1,7 +1,7 @@
 fastapi
 uvicorn
 google-genai
-dotenv
+python-dotenv
 numpy
 matplotlib
-sklearn
+scikit-learn
