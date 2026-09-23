@@ -8,6 +8,11 @@ function ArtworkCritiqueInner() {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<1 | 2 | 3>(1);
 
+  const API_BASE_URL = 
+    typeof window !== 'undefined' && window.location.hostname === 'localhost'
+      ? 'http://localhost:8000'
+      : 'https://your-backend-url.onrender.com'; // 👈 본인의 실제 Render 백엔드 주소로 딱 한 번만 입력해두세요!
+
   useEffect(() => {
     const tabParam = searchParams.get('tab');
     if (tabParam === '1') setActiveTab(1);
@@ -115,7 +120,7 @@ function ArtworkCritiqueInner() {
     formData.append('file', selectedFile);
 
     try {
-      const res = await fetch('http://localhost:8000/api/v1/critique/analyze', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/critique/analyze`, {
         method: 'POST',
         body: formData,
       });
@@ -138,7 +143,7 @@ function ArtworkCritiqueInner() {
     formData.append('effect', effect);
 
     try {
-      const res = await fetch('http://localhost:8000/api/v1/critique/transform', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/critique/transform`, {
         method: 'POST',
         body: formData,
       });
@@ -164,7 +169,7 @@ function ArtworkCritiqueInner() {
     try {
       setIsLoadingFortune(true);
 
-      const res = await fetch('http://localhost:8000/api/v1/critique/fortune', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/critique/fortune`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
