@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 export const dynamic = 'force-dynamic';
 
-export default function ArtworkCritiquePage() {
+function ArtworkCritiqueInner() {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<1 | 2 | 3>(1);
 
@@ -25,9 +25,9 @@ export default function ArtworkCritiquePage() {
   // 1번 탭 상태 (비평)
   const [critiqueResult, setCritiqueResult] = useState<string>('');
   const [isLoadingCritique, setIsLoadingCritique] = useState(false);
-  const [target, setTarget] = useState('');           // target 선언
-  const [name, setName] = useState('');               // name 선언
-  const [birthdate, setBirthdate] = useState('');     // birthdate 선언
+  const [target, setTarget] = useState('');          // target 선언
+  const [name, setName] = useState('');              // name 선언
+  const [birthdate, setBirthdate] = useState('');    // birthdate 선언
   const [category, setCategory] = useState<'zodiac' | 'constellation'>('zodiac');
 
   // 2번 탭 상태 (효과 변환)
@@ -37,8 +37,8 @@ export default function ArtworkCritiquePage() {
   // 3번 탭 상태 (운세)
   const [fortuneType, setFortuneType] = useState<'zodiac' | 'constellation'>('zodiac');
   const [targetInput, setTargetInput] = useState(zodiacList[0]);
-  const [nameInput, setNameInput] = useState('');       // 추가: 이름 상태
-  const [birthInput, setBirthInput] = useState('');       // 추가: 생년월일 상태
+  const [nameInput, setNameInput] = useState('');      // 추가: 이름 상태
+  const [birthInput, setBirthInput] = useState('');      // 추가: 생년월일 상태
   const [fortuneResult, setFortuneResult] = useState<{ 
     text: string;
     insight?: string;
@@ -47,9 +47,9 @@ export default function ArtworkCritiquePage() {
       wealth: number; 
       luck: number;
       relationship: number; // 👈 추가
-      energy: number; } 
-    } | null>(null);
-
+      energy: number; 
+    } 
+  } | null>(null);
 
   const scores = fortuneResult?.scores || {
     overall: 0,
@@ -154,26 +154,23 @@ export default function ArtworkCritiquePage() {
 
   // 3. 운세 측정 함수
   const handleGetFortune = async () => {
-    // 💡 3번 탭 전용 상태값들로 수정
     console.log("🔍 현재 입력된 상태값 확인:", { nameInput, birthInput, fortuneType, targetInput });
 
-    // 1. 입력값 검증 (하나라도 비어있으면 경고창 출력)
     if (!nameInput || !birthInput || !targetInput) {
       alert(`입력되지 않은 값이 있습니다.\n- 이름: ${nameInput || '없음'}\n- 생년월일: ${birthInput || '없음'}\n- 운세 대상: ${targetInput || '없음'}`);
       return;
     }
 
     try {
-      setIsLoadingFortune(true); // 로딩 상태 활성화 추가
+      setIsLoadingFortune(true);
 
-      // 2. 백엔드 /critique/fortune 경로로 JSON 데이터 전송
       const res = await fetch('http://localhost:8000/api/v1/critique/fortune', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          category: fortuneType,  // 백엔드가 요구하는 키값에 맞춤
+          category: fortuneType,
           target: targetInput,
           name: nameInput,
           birthdate: birthInput,
@@ -190,9 +187,9 @@ export default function ArtworkCritiquePage() {
       
       if (data.success) {
         console.log("✨ 운세 응답 데이터:", data);
-        // 💡 백엔드의 fortune_text를 text로 매핑
         setFortuneResult({
-          text: data.fortune_text, 
+          text: data.fortune_text,
+          insight: data.insight, // 백엔드에서 주는 insight가 있다면 반영
           scores: data.scores
         }); 
       } else {
@@ -202,7 +199,7 @@ export default function ArtworkCritiquePage() {
       console.error('🔥 API 연동 에러:', err);
       alert('운세를 불러오는 중 오류가 발생했습니다.');
     } finally {
-      setIsLoadingFortune(false); // 로딩 해제
+      setIsLoadingFortune(false);
     }
   };
 
@@ -212,22 +209,16 @@ export default function ArtworkCritiquePage() {
     }
   };
 
-  
-
-  // 💡 띠/별자리 타입 변경 시 targetInput을 자동 기본값으로 세팅하는 함수
   const handleFortuneTypeChange = (type: 'zodiac' | 'constellation') => {
     setFortuneType(type);
     setTargetInput(type === 'zodiac' ? zodiacList[0] : constellationList[0]);
   };
 
-  
- 
-
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8 bg-white rounded-2xl shadow-sm border border-slate-100 my-10">
       <h1 className="text-2xl font-bold text-slate-800">🎨 아트 앤 포춘 스튜디오</h1>
 
-      {/* 3가지 메인 전환 버튼 (초기화 로직 포함) */}
+      {/* 3가지 메인 전환 버튼 */}
       <div className="grid grid-cols-3 gap-4">
         <button
           onClick={() => handleTabChange(1)}
@@ -302,10 +293,9 @@ export default function ArtworkCritiquePage() {
         </div>
       )}
 
-      {/* --- 탭 2: 효과 변환 & 다운로드 (8가지 효과) --- */}
+      {/* --- 탭 2: 효과 변환 & 다운로드 --- */}
       {activeTab === 2 && (
         <div className="space-y-6">
-          {/* 상단 파일 업로드 영역 */}
           <div className="relative border-2 border-dashed border-indigo-200 hover:border-indigo-500 bg-indigo-50/30 hover:bg-indigo-50/60 transition p-8 rounded-2xl text-center cursor-pointer group">
             <input 
               type="file" 
@@ -326,23 +316,16 @@ export default function ArtworkCritiquePage() {
             </div>
           </div>
 
-          {/* 🖼️ 이미지가 업로드된 후에만 좌우 2칸 영역이 나타남 */}
           {previewUrl && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fadeIn">
-              {/* 왼쪽: 원본 이미지 */}
               <div className="p-4 bg-white border border-slate-200 rounded-2xl text-center shadow-sm">
                 <p className="text-sm font-semibold text-slate-500 mb-3 flex items-center justify-center gap-2">
                   <span className="w-2 h-2 bg-slate-400 rounded-full"></span>
                   원본 이미지
                 </p>
-                <img 
-                  src={previewUrl} 
-                  alt="원본" 
-                  className="max-h-64 mx-auto rounded-xl shadow-inner object-contain" 
-                />
+                <img src={previewUrl} alt="원본" className="max-h-64 mx-auto rounded-xl shadow-inner object-contain" />
               </div>
 
-              {/* 오른쪽: 변환된 결과 (업로드 직후엔 깔끔한 빈 박스) */}
               <div className="p-4 bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-2xl text-center flex flex-col items-center justify-center min-h-[250px]">
                 {isTransforming ? (
                   <div className="space-y-3 text-indigo-600">
@@ -355,11 +338,7 @@ export default function ArtworkCritiquePage() {
                       <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
                       변환 완료!
                     </p>
-                    <img 
-                      src={transformedUrl} 
-                      alt="변환 결과" 
-                      className="max-h-64 mx-auto rounded-xl shadow-lg object-contain" 
-                    />
+                    <img src={transformedUrl} alt="변환 결과" className="max-h-64 mx-auto rounded-xl shadow-lg object-contain" />
                   </div>
                 ) : (
                   <div className="text-slate-400 space-y-2">
@@ -372,7 +351,6 @@ export default function ArtworkCritiquePage() {
             </div>
           )}
 
-          {/* 효과 버튼 패널 */}
           <div className="grid grid-cols-6 gap-2 pt-2">
             <button onClick={() => handleTransform('grayscale')} disabled={isTransforming || !selectedFile} className="py-2.5 bg-slate-800 text-white rounded-xl text-xs font-medium hover:bg-slate-900 transition shadow-sm disabled:opacity-40">흑백</button>
             <button onClick={() => handleTransform('sepia')} disabled={isTransforming || !selectedFile} className="py-2.5 bg-amber-700 text-white rounded-xl text-xs font-medium hover:bg-amber-800 transition shadow-sm disabled:opacity-40">세피아</button>
@@ -387,7 +365,6 @@ export default function ArtworkCritiquePage() {
             <button onClick={() => handleTransform('posterize')} disabled={isTransforming || !selectedFile} className="py-2.5 bg-pink-600 text-white rounded-xl text-xs font-medium hover:bg-pink-700 transition shadow-sm disabled:opacity-40">포스터</button>
           </div>
 
-          {/* 다운로드 버튼 */}
           {transformedUrl && (
             <a
               href={transformedUrl}
@@ -403,7 +380,6 @@ export default function ArtworkCritiquePage() {
       {/* --- 탭 3: AI 운세 측정 및 그래프 시각화 --- */}
       {activeTab === 3 && (
         <div className="max-w-4xl mx-auto p-6 space-y-8">
-          {/* 운세 입력 영역 */}
           <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4 shadow-sm">
             <h3 className="font-bold text-slate-700 text-sm flex items-center gap-2">
               <span>🔮</span> Python 해시 백엔드 연동 AI 운세
@@ -428,7 +404,6 @@ export default function ArtworkCritiquePage() {
             </div>
 
             <div className="flex gap-3 items-center pt-2">
-              {/* 1. 띠별 / 별자리 선택 셀렉트 */}
               <select
                 value={fortuneType}
                 onChange={(e) => handleFortuneTypeChange(e.target.value as 'zodiac' | 'constellation')}
@@ -438,7 +413,6 @@ export default function ArtworkCritiquePage() {
                 <option value="constellation">별자리 운세</option>
               </select>
 
-              {/* 2. 선택된 종류에 따라 목록이 동적으로 바뀌는 셀렉트 */}
               <select
                 value={targetInput}
                 onChange={(e) => setTargetInput(e.target.value)}
@@ -466,10 +440,8 @@ export default function ArtworkCritiquePage() {
             </div>
           </div>
 
-          {/* 📊 백엔드 연동 데이터 기반 4종 입체 그래프 결과 영역 */}
           {fortuneResult && (
             <div className="space-y-6 animate-fadeIn">
-              {/* 총평 텍스트 */}
               <div className="p-6 bg-indigo-50/60 border border-indigo-100 rounded-2xl text-slate-700 leading-relaxed whitespace-pre-wrap shadow-sm">
                 <h3 className="font-bold text-lg mb-2 text-indigo-900">✨ {nameInput}님의 백엔드 정밀 검증 AI 운세</h3>
                 {fortuneResult.text}
@@ -478,7 +450,7 @@ export default function ArtworkCritiquePage() {
               {/* 4가지 입체 그래프 그리드 */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                {/* 1. 입체 도넛 링 게이지 (종합운) */}
+                {/* 1. 입체 도넛 링 게이지 */}
                 <div className="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm flex flex-col justify-between">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-bold text-slate-700">1. 종합 운세 입체 도넛</span>
@@ -498,7 +470,7 @@ export default function ArtworkCritiquePage() {
                   <p className="text-xs text-slate-400 text-center">종합 지수 반영</p>
                 </div>
 
-                {/* 2. 3D 원근감 입체 막대그래프 (재물운) */}
+                {/* 2. 재물 & 비즈니스 밀도 곡선 */}
                 <div className="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm flex flex-col justify-between">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-bold text-slate-700">2. 재물 & 비즈니스 밀도 곡선</span>
@@ -516,7 +488,6 @@ export default function ArtworkCritiquePage() {
                           <stop offset="100%" stopColor="#0284c7" stopOpacity="0.05" />
                         </linearGradient>
                       </defs>
-                      {/* 💡 계수를 키워 점수 차이에 따라 봉우리가 극적으로 오르내리도록 수정 */}
                       <path 
                         d={`M 0 38 Q 22 ${40 - (fortuneResult.scores.wealth * 0.38)} 50 ${40 - (fortuneResult.scores.wealth * 0.75)} T 100 38 L 100 40 L 0 40 Z`} 
                         fill="url(#gradWealth)" 
@@ -533,7 +504,7 @@ export default function ArtworkCritiquePage() {
                   <p className="text-xs text-slate-400 text-center">재물 점수 기반 KDE 밀도 맵</p>
                 </div>
 
-                {/* 3. 행운 막대 + 꺾은선 혼합 차트 */}
+                {/* 3. 행운 스택 & 트렌드 맵 */}
                 <div className="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm flex flex-col justify-between">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-bold text-slate-700">3. 행운 스택 & 트렌드 맵</span>
@@ -578,12 +549,10 @@ export default function ArtworkCritiquePage() {
                             </filter>
                           </defs>
 
-                          {/* 배경 보조 가이드 라인 */}
                           {[12, 25, 37].map((y, idx) => (
                             <line key={idx} x1="0" y1={y} x2="100" y2={y} stroke="#f1f5f9" strokeWidth="0.6" strokeDasharray="3 3" />
                           ))}
 
-                          {/* 입체감 있는 그라데이션 스택 바 */}
                           {bars.map((b, idx) => (
                             <g key={idx} className="transition-all duration-500">
                               <rect x={b.x - 5.5} y={50 - b.base} width="11" height={b.base} rx="3" fill="url(#barGrad1)" opacity="0.85" />
@@ -591,10 +560,8 @@ export default function ArtworkCritiquePage() {
                             </g>
                           ))}
 
-                          {/* 세련된 트렌드 점선 곡선 */}
                           <path d={trendPath} fill="none" stroke="#c2410c" strokeWidth="2" strokeDasharray="4 3" opacity="0.85" />
 
-                          {/* 💡 데이터 포인트 점 크기 축소 (r을 3으로 조정) */}
                           {trendPoints.map((p, i) => (
                             <circle key={i} cx={p.x} cy={p.y} r="3" fill="#fff" stroke="#9a3412" strokeWidth="1.5" filter="url(#glow)" />
                           ))}
@@ -605,7 +572,7 @@ export default function ArtworkCritiquePage() {
                   <p className="text-xs text-slate-400 text-center">프로페셔널 그라데이션 스택 & 트렌드 맵</p>
                 </div>
 
-                {/* 4. 다차원 레이더 방사형 입체 차트 (5지표 통합) */}
+                {/* 4. 멀티 다차원 레이더 맵 */}
                 <div className="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm flex flex-col justify-between">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-bold text-slate-700">4. 멀티 다차원 레이더 맵</span>
@@ -622,7 +589,6 @@ export default function ArtworkCritiquePage() {
                           }).join(' ');
                           return <polygon key={idx} points={pts} fill="none" stroke="#cbd5e1" strokeWidth="1" />;
                         })}
-                        {/* 백엔드 5가지 지표 매핑 다각형 */}
                         {(() => {
                           const scs = [
                             fortuneResult.scores.overall,
@@ -648,14 +614,32 @@ export default function ArtworkCritiquePage() {
                   </div>
                   <p className="text-xs text-slate-400 text-center">5개 지표 입체 방사형 웹</p>
                 </div>
+
               </div>
-               {/* 💡 4개 그래프 영역 밑부분에 추가할 AI 종합 인사이트 박스 */}
-              
+
+              {/* 💡 4개 그래프 영역 밑부분에 추가한 AI 종합 인사이트 박스 */}
+              <div className="p-5 bg-gradient-to-r from-indigo-900 to-slate-900 text-white rounded-2xl shadow-md space-y-2">
+                <div className="flex items-center gap-2 text-indigo-300 font-bold text-sm">
+                  <span>💡</span> AI 종합 인사이트 분석
+                </div>
+                <p className="text-sm text-slate-200 leading-relaxed">
+                  {fortuneResult.insight || dynamicText}
+                </p>
+              </div>
+
             </div>
           )}
-          
         </div>
       )}
     </div>
+  );
+}
+
+// Next.js 빌드 시 useSearchParams 에러를 방지하기 위해 Suspense로 감싼 메인 export 컴포넌트
+export default function ArtworkCritiquePage() {
+  return (
+    <Suspense fallback={<div className="text-center py-20 text-slate-500">로딩 중...</div>}>
+      <ArtworkCritiqueInner />
+    </Suspense>
   );
 }
