@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function HomePage() {
+// 1. 기존에 작성하신 모든 로직이 담긴 내부 컴포넌트
+function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -38,7 +39,7 @@ export default function HomePage() {
     password: ''
   });
 
-  // ✨ 폼 초기화 함수 추가
+  // 폼 초기화 함수 추가
   const resetLoginForm = () => {
     setLoginForm({ email: '', password: '' });
   };
@@ -55,7 +56,7 @@ export default function HomePage() {
     });
   };
 
-  // ✨ 모달을 안전하게 열고 닫는 핸들러 (폼 초기화 포함)
+  // 모달을 안전하게 열고 닫는 핸들러 (폼 초기화 포함)
   const handleOpenModal = (type: string) => {
     if (type === 'login') {
       resetLoginForm();
@@ -129,7 +130,6 @@ export default function HomePage() {
           } else if (action.type === 'open_modal') {
             setTimeout(() => {
               const targetModal = action.target === 'signup_detailed' ? 'signup' : action.target;
-              // 챗봇을 통해 모달이 열릴 때도 초기화 수행
               if (targetModal === 'login') resetLoginForm();
               if (targetModal === 'signup') resetSignupForm();
               
@@ -195,9 +195,7 @@ export default function HomePage() {
         localStorage.setItem('token', data.access_token);
         localStorage.setItem('username', data.username);
         
-        // ✨ 네비게이션바 등에 로그인 상태 변경을 즉시 알리기 위한 이벤트 발생
         window.dispatchEvent(new Event('auth-change'));
-
 
         alert('로그인 성공!');
         setActiveModal(null);
@@ -574,5 +572,18 @@ export default function HomePage() {
       )}
 
     </div>
+  );
+}
+
+// 2. Next.js 빌드 에러를 방지하기 위해 Suspense로 감싸는 메인 페이지 컴포넌트
+export default function HomePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[60vh] text-slate-400 text-xs">
+        페이지를 불러오는 중입니다... ⚙️
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }
