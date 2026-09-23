@@ -24,9 +24,15 @@ export default function CalendarPage() {
   const [schedulesData, setSchedulesData] = useState<CalendarDB>({});
   
   const [selectedDateStr, setSelectedDateStr] = useState<string | null>(null);
+
+  const API_BASE_URL = 
+    typeof window !== 'undefined' && window.location.hostname === 'localhost'
+      ? 'http://localhost:8000'
+      : 'https://your-backend-url.onrender.com'; // 👈 본인의 실제 Render 백엔드 주소로 딱 한 번만 입력해두세요!
   
   const [newTitle, setNewTitle] = useState("");
   const [newTime, setNewTime] = useState("09:00");
+
 
   const [editingValues, setEditingValues] = useState<{ [id: string]: { title: string; time: string } }>({});
 
@@ -47,7 +53,7 @@ export default function CalendarPage() {
 
   const fetchSchedules = async (targetYear: number, targetMonth: number) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/calendar/schedules?year=${targetYear}&month=${targetMonth + 1}`);
+      const res = await fetch(`${API_BASE_URL}/api/v1/calendar/schedules?year=${targetYear}&month=${targetMonth + 1}`);
       const result = await res.json();
       if (result.success) {
         setSchedulesData(result.data);
@@ -84,7 +90,7 @@ export default function CalendarPage() {
     if (!selectedDateStr || !newTitle.trim()) return;
 
     try {
-      const res = await fetch('http://localhost:8000/api/v1/calendar/schedule', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/calendar/schedule`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ date: selectedDateStr, title: newTitle, time: newTime })
@@ -107,7 +113,7 @@ export default function CalendarPage() {
     if (!selectedDateStr || !newTitle.trim()) return;
 
     try {
-      const res = await fetch('http://localhost:8000/api/v1/calendar/schedule', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/calendar/schedule`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ date: selectedDateStr, title: newTitle, time: newTime })
@@ -130,7 +136,7 @@ export default function CalendarPage() {
     if (!targetEdit || !targetEdit.title.trim()) return;
 
     try {
-      const res = await fetch('http://localhost:8000/api/v1/calendar/schedule', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/calendar/schedule`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -153,7 +159,7 @@ export default function CalendarPage() {
   const handleDeleteSchedule = async (id: string) => {
     if (!selectedDateStr) return;
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/calendar/schedule/${selectedDateStr}/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/calendar/schedule/${selectedDateStr}/${id}`, {
         method: 'DELETE',
       });
       const result = await res.json();
@@ -184,7 +190,7 @@ export default function CalendarPage() {
     const todayStr = new Date().toISOString().split('T')[0];
 
     try {
-      const res = await fetch('http://localhost:8000/api/v1/calendar/ai-command', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/calendar/ai-command`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
