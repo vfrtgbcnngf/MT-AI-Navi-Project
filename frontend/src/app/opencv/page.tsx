@@ -10,6 +10,11 @@ export default function OpenCVTablePage() {
   const [textContent, setTextContent] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const API_BASE_URL = 
+    typeof window !== 'undefined' && window.location.hostname === 'localhost'
+      ? 'http://localhost:8000'
+      : 'https://your-backend-url.onrender.com'; // 👈 본인의 실제 Render 백엔드 주소로 딱 한 번만 입력해두세요!
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
@@ -28,7 +33,7 @@ export default function OpenCVTablePage() {
     formData.append('file', file);
 
     try {
-      const res = await fetch('http://localhost:8000/api/v1/opencv/extract-merged-table', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/opencv/extract-merged-table`, {
         method: 'POST',
         body: formData,
       });
@@ -58,7 +63,7 @@ export default function OpenCVTablePage() {
     }
 
     try {
-      const res = await fetch('http://localhost:8000/api/v1/opencv/download-mixed-merged-excel', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/opencv/download-mixed-merged-excel`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
