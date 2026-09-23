@@ -13,6 +13,11 @@ export default function RootLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeModal, setActiveModal] = useState<'login' | 'signup' | null>(null);
 
+  const API_BASE_URL = 
+    typeof window !== 'undefined' && window.location.hostname === 'localhost'
+      ? 'http://localhost:8000'
+      : 'https://your-backend-url.onrender.com'; // 👈 본인의 실제 Render 백엔드 주소로 딱 한 번만 입력해두세요!
+
   // 로그인 입력폼 상태
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -90,7 +95,7 @@ export default function RootLayout({
     }
 
     try {
-      const res = await fetch('http://localhost:8000/api/v1/auth/signup', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -118,7 +123,7 @@ export default function RootLayout({
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('http://localhost:8000/api/v1/auth/login', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -154,7 +159,7 @@ export default function RootLayout({
     if (!confirm('정말 회원탈퇴를 진행하시겠습니까?')) return;
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:8000/api/v1/auth/withdraw', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/auth/withdraw`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
