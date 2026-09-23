@@ -12,3 +12,4 @@ openpyxl
 python-jose[cryptography]
 motor
 passlib
+pydantic[email]
