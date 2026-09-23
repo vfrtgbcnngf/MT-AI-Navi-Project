@@ -7,7 +7,6 @@ matplotlib
 scikit-learn
 python-multipart
 holidays
-google-generativeai
 pandas
 openpyxl
 jose
