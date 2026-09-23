@@ -31,8 +31,15 @@ def get_password_hash(password: str):
     password_bytes = password.encode('utf-8')
     if len(password_bytes) > 72:
         password = password_bytes[:72].decode('utf-8', errors='ignore')
+    
+    return pwd_context.hash(password)
 
-def verify_password(plain_password, hashed_password):
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    # 로그인 시 입력한 비밀번호도 72바이트를 초과하면 자릅니다.
+    password_bytes = plain_password.encode('utf-8')
+    if len(password_bytes) > 72:
+        plain_password = password_bytes[:72].decode('utf-8', errors='ignore')
+        
     return pwd_context.verify(plain_password, hashed_password)
 
 def create_access_token(data: dict):
