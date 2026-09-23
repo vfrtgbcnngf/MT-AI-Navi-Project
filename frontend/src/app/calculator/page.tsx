@@ -26,6 +26,11 @@ export default function CalculatorPage() {
   const [loading, setLoading] = useState(false);
   const [showSymbols, setShowSymbols] = useState(false); // 특수기호 목록 표시 여부
 
+  const API_BASE_URL = 
+    typeof window !== 'undefined' && window.location.hostname === 'localhost'
+      ? 'http://localhost:8000'
+      : 'https://your-backend-url.onrender.com'; // 👈 본인의 실제 Render 백엔드 주소로 딱 한 번만 입력해두세요!
+
   // 특수기호 클릭 시 입력창에 추가하고 목록 숨기기
   const handleSymbolClick = (symbol: string) => {
     setExpression((prev) => prev + symbol);
@@ -43,7 +48,7 @@ export default function CalculatorPage() {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:8000/api/v1/calculator', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/calculator`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ expression: userQuery }),
