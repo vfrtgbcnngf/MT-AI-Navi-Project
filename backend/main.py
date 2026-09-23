@@ -12,8 +12,8 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=origins,       # 👈 여기에 정확한 리스트를 넣어주세요!
+    allow_credentials=True,      # 👈 토큰 인증을 위해 필수
     allow_methods=["*"],
     allow_headers=["*"],
 )
