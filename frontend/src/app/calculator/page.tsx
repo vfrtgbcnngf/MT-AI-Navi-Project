@@ -29,7 +29,7 @@ export default function CalculatorPage() {
   const API_BASE_URL = 
     typeof window !== 'undefined' && window.location.hostname === 'localhost'
       ? 'http://localhost:8000'
-      : 'https://your-backend-url.onrender.com'; // 👈 본인의 실제 Render 백엔드 주소로 딱 한 번만 입력해두세요!
+      : 'https://mt-ai-navi-project.onrender.com'; // 👈 본인의 실제 Render 백엔드 주소로 딱 한 번만 입력해두세요!
 
   // 특수기호 클릭 시 입력창에 추가하고 목록 숨기기
   const handleSymbolClick = (symbol: string) => {
