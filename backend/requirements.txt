@@ -10,3 +10,4 @@ holidays
 pandas
 openpyxl
 python-jose[cryptography]
+motor
