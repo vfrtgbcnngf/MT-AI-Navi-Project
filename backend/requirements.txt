@@ -9,4 +9,4 @@ python-multipart
 holidays
 pandas
 openpyxl
-jose
+python-jose[cryptography]
