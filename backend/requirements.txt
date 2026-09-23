@@ -10,3 +10,4 @@ holidays
 google-generativeai
 pandas
 openpyxl
+jose
