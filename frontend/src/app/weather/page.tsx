@@ -7,6 +7,11 @@ export default function WeatherPage() {
   const [loading, setLoading] = useState(false);
   const [reportText, setReportText] = useState('멀티 AI 기상 모델과 백엔드 빅데이터 엔진이 대기 상태를 다각도로 분석할 준비가 되었습니다.');
   
+  const API_BASE_URL = 
+    typeof window !== 'undefined' && window.location.hostname === 'localhost'
+      ? 'http://localhost:8000'
+      : 'https://your-backend-url.onrender.com'; // 👈 본인의 실제 Render 백엔드 주소로 딱 한 번만 입력해두세요!
+
   const [chartImages, setChartImages] = useState({
     tempChart: '',
     rainChart: '',
@@ -23,7 +28,7 @@ export default function WeatherPage() {
     setReportText('다중 AI 앙상블 모델이 기상 위성 빅데이터를 교차 검증하고 matplotlib 시각화 엔진으로 5종 그래프를 렌더링 중입니다... 🌐');
 
     try {
-      const res = await fetch('http://localhost:8000/api/v1/weather', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/weather`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query }),
