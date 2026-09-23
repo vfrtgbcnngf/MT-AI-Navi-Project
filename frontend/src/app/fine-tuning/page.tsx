@@ -29,6 +29,11 @@ export default function FineTuningPage() {
   const [textFile, setTextFile] = useState<File | null>(null);
   const [imageFiles, setImageFiles] = useState<FileList | null>(null);
 
+  const API_BASE_URL = 
+    typeof window !== 'undefined' && window.location.hostname === 'localhost'
+      ? 'http://localhost:8000'
+      : 'https://your-backend-url.onrender.com'; // 👈 본인의 실제 Render 백엔드 주소로 딱 한 번만 입력해두세요!
+
   // 파일 입력 DOM을 직접 제어하기 위한 Ref 선언
   const textInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -56,7 +61,7 @@ export default function FineTuningPage() {
     }
 
     try {
-      const response = await fetch('http://localhost:8000/api/v1/finetune/submit', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/finetune/submit`, {
         method: 'POST',
         body: formData,
       });
