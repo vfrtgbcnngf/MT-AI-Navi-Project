@@ -1,4 +1,5 @@
 import os
+import hashlib
 from motor.motor_asyncio import AsyncIOMotorClient
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
@@ -7,7 +8,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# 1. MONGO_DETAILS -> MONGO_URI 로 변경 (.env 파일과 일치시킴)
 MONGO_URI = os.getenv("MONGO_URI")
 SECRET_KEY = os.getenv("SECRET_KEY")
 
@@ -20,27 +20,30 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440
 
 client = AsyncIOMotorClient(MONGO_URI)
-# 2. mtainavi_studio -> mtainavi_db 로 변경 (새로 분리한 DB 이름)
 db = client.mtainavi_db
 user_collection = db.get_collection("users")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-def get_password_hash(password: str):
-    # bcrypt의 72바이트 제한 에러를 방지하기 위해 72바이트까지만 잘라냅니다.
+def _prepare_password(password: str) -> str:
+    """
+    비밀번호가 72바이트를 초과하는 경우, SHA-256으로 해시하여 
+    항상 72바이트 미만의 안전한 고정 길이 문자열로 변환합니다.
+    72바이트 이하인 경우는 원본 그대로 사용하여 호환성을 유지합니다.
+    """
     password_bytes = password.encode('utf-8')
     if len(password_bytes) > 72:
-        password = password_bytes[:72].decode('utf-8', errors='ignore')
-    
-    return pwd_context.hash(password)
+        # SHA-256을 거치면 항상 32바이트(hex로 표현 시 64바이트)가 되므로 72바이트 제한을 완벽히 통과합니다.
+        return hashlib.sha256(password_bytes).hexdigest()
+    return password
+
+def get_password_hash(password: str) -> str:
+    processed_password = _prepare_password(password)
+    return pwd_context.hash(processed_password)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    # 로그인 시 입력한 비밀번호도 72바이트를 초과하면 자릅니다.
-    password_bytes = plain_password.encode('utf-8')
-    if len(password_bytes) > 72:
-        plain_password = password_bytes[:72].decode('utf-8', errors='ignore')
-        
-    return pwd_context.verify(plain_password, hashed_password)
+    processed_password = _prepare_password(plain_password)
+    return pwd_context.verify(processed_password, hashed_password)
 
 def create_access_token(data: dict):
     to_encode = data.copy()
