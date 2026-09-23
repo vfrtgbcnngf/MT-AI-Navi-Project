@@ -13,4 +13,5 @@ python-jose[cryptography]
 motor
 passlib[bcrypt]
 bcrypt
+pymongo
 pydantic[email]
